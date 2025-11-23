@@ -1,0 +1,321 @@
+====
+GenAi for DataEngineers
+
+---
+what is GenAI?
+
+what is LLM?
+
+How to relate each other?
+
+----
+
+LLM : stands for large language model(LLM) deals with text.
+   Given set of words it will generate next words.
+   it's generate new words.
+
+GenAI:
+  it can deals with data multi models like text,images,videos,music...
+
+----
+[#img-AI]
+.A AI image
+:imagesdir: ../images
+:iconsdir: ./icons
+:stylesdir: ./styles
+:scriptsdir: ./js
+image::AI.image.png[Sunset,300,200]
+
+
+Artificial Intelligence -AI
+     machine Learning -ML
+           Deep Learning- DL
+             LLM  GenAI
+
+
+---
+what was there before chatGPT era?
+
+there is NaturalLanguageProcessing (NLP).
+
+NLP can do :
+
+        spam analysis
+        sentimental analysis.
+        ex: when you typing something it will autocompletes the sentence.
+            based on the words it will understand the whether it's bad review good review
+        NLP can't generate new text because it can't retain context.
+
+what is context here?
+
+   for example there a word called
+   a dark cave in the sentence a bat is there
+   a dark cave
+    ..
+    ..
+    ..
+    .. a bat
+
+
+     here what is a bat
+     flying bat ? or cricket bat? it cannot identify because it cannot retain the context.
+
+---
+
+----
+How to retain the context ?
+ There is a paper given by Google Researchers
+     Attention All You Need(Transformers). given on Dec 2017
+
+enabling the training to be done in parallel.
+----
+Because of these two things all Ai related things are happening.
+
+
+====
+ How ChatGpt build?
+
+1)pretraining stage
+2)fine tuning stage.
+
+what is pretraining stage?
+
+    they take huge data from internet ,ex: wikipedia,books,quora....
+    they will setup huge cluster to process this data.
+     1000's GPU cluster
+    months of crunching data
+    investing million of dollars.
+    with the result we will get base model or foundation models.
+
+ but we cannot query here if you ask question it will ask more question.
+ with this it can generate next words. but it cannot answer your questions, for that we need to do fine tuning.
+
+    foundation model
+        GPT 3.5
+        GPT 4
+
+    finetune model(Instruct/Chat model)
+        ChatGPT (finetuned model)
+
+we cannot do pretraining as it's costly
+
+what is fine tuning:
+  we will train by passing huge question answers to the system.
+
+
+HuggingFace
+----
+Meta build Llama2 numbers -70B with data of 10TB text .
+6000 of GPU's(12 days) approximatly $2 million spent
+it results 140GB parameter file with 140 GB.
+
+7Billion data will get 14GB file
+----
+what is parameter file?
+
+to run on local we need
+  - parameter file
+  - executable file
+
+what is context length?
+  they can retain a context up to nth length
+
+what is a token?
+ it's a word or it's subset of word.
+for example :
+  rich
+  richest
+  richer
+
+ poor
+poorest
+
+here tokens are
+   rich,est ,er.
+
+with this tokens we can build more words.
+
+For example we can have tokens in character level
+so that it will be only 26 tokens we can create any words out of it.
+
+if we take english dictionary words it will 171k words it will be too much.
+
+if we make sub word as token then it's become 50k vocab.
+
+
+
+Pretraining: is on huge amount of data ,data might be low quality. (will get foundation model)
+fine tuning: the data is less but with high quality.(will get the chat ready model)
+
+who will do pretraining?
+
+who build what foundation models?
+ Open AI(GPT4)
+ Meta (llama3)
+ Google (Gemini  earlier names are bard)
+ Anthropic (Claude3)
+
+
+The magic lies on Parameter file ,where foundation models are build by using this.
+
+if we want use proprataory parameter file we can do by using web ui and through API and it's  not opensource.
+as we cannot download.
+
+BUt opensource  like LLama we can download and fine tune.
+
+Deep Neural Network:
+ there is three layers:
+   Input layer
+   Hidden layer
+   output layer
+
+Bigger the models better the performance.
+everyone using Transformer Architecture.
+
+
+session-4:
+1)prompt engineering.
+2)Retrieval Augmented generation(RAG): RAG Suited for BigData engineering.
+     build a chatbot for employs in company.
+For example :
+   i have framework build in my company and supporting from last five years by employees.
+   if i want to build a chatbot to support clients instead of supporting by employees.
+How can we do that as we have questions and answers for that?
+we will take one pretrained parameter(basemodel) file i.e for example(llama-2-70b)
+chunk the data ---> embedding ---> index in a vector database.
+
+prompt: why my framework is failing with Connection issue with error xyz?
+context: Answer comes from vector database.
+
+RAG will work if it's same question which is having in the database.
+if we want system it'self figure it out answer with similer questions then we have to go with
+fine tuning.
+
+what is the main purpose of RAG?
+To Enhance response by incorporating external knowledge sources.
+
+
+3)Fine-Tuning:
+
+How do we fine tune?
+we will feed questions and answers.
+we give 100k super high quality questions and answers and the model weights get updated based on this.
+we are updating the model weights direclty with accurate data.
+Fine tune will give better responses but tougher to do. after fine tune even if it's not having
+question in data base it will give from multipule questions.
+
+next stage of Fine tuning is reinforcement of learning from human feedback(RLHF).
+
+How frequently fine tuning will do?
+probably evey day/week/month.
+4)Pretraining
+How frequently pretraining will?
+every year as it's costly.
+
+
+
+What is LLM Agents?
+
+As pretrained is done year ago , How it's get latest information?
+Though LLM Agents.
+
+The way world is moving towards specialized LLM's for specific tasks.
+
+Summary generation, Text to image, Classification,
+
+
+
+
+
+
+
+
+https://platform.openai.com/tokenizer
+what is the disadvantages of less vocab size?
+what is context size? how it
+
+
+they will use sub word level ,instead of character level?
+with the character we will have less vocab size,but we will the miss esance of word.
+because of this it will increase context length ,it cannot hold long context.
+that is the actual game changer.
+
+per word it will be ~4 tokens.
+
+
+they used tick token algo to get tokens.
+
+what is few shot learning?
+
+
+
+
+
+
+
+
+
+
+
+Week-2:
+Imagine you can do one billion operation per second
+How much time it will take to pre train a model
+it will take years to do  the pre training
+
+By using parallelizable architectures(GPU'S)
+
+Transformers:
+Fundamental building blocks of all the LLM's.
+
+By using Transformers architecture we will do it in few years.
+GPU's will helps us to run the transformer architecture.
+
+Transformers will take all text at once in parallel rather than token by token like traditions
+models.
+
+Model Training:
+we will tweek the model to give better performance.
+Model Inference: when we given the set of tokens how it's predicts the new token?
+
+How LLM's works?
+Circket is ______?
+
+sport 30%
+physical 10%
+game 10%
+intresting 2%
+gentlemans 1%
+
+LLM's is probability search by default it will gives randoms answers.
+if we set or mandate it to select words of highest probability  it will select 'sport' here.
+
+if we allow it to select less likely words along the way then the results looks more natural.
+
+https://poloclub.github.io/transformer-explainer/
+
+ smaller value of temperature means less randomness.
+
+what is back propgation?
+which helps to tweek the weghits to update true value.
+
+
+How Transformer works?
+
+each word might have different meaning based on the context.
+to generate the next word we have to retain the context.
+else it might be tidious task.
+
+Transformer go through two kinds of operations
+
+1)Attention mechanism(retaining the context)
+2)Feed forward neutral network(MLP) (Knows about the facts)
+
+Combination of retaining the previous context and knowledge which it got while doing pretraining helps
+to gives the results.
+
+it's goes through multiple stages of it.
+
+
+
+
+

@@ -1,0 +1,201 @@
+= RAG
+=== FineTuning
+==== Pretraining
+
+== Session 1
+=== RAG (Retrieval Augmented Generation)
+
+There are limitations of LLMs:
+1. We cannot get the latest data, i.e., it is not up to date. it may helucinate if it doesnt have answer.
+2. LLM is trained on public data; it is not trained on private data.
+3. For abbreviations, it cannot answer without context.
+
+We solve the above issues by passing context to the LLM and saying, "Please refer to this while answering."
+We are providing company-related documents to the LLM to answer company-related questions.
+
+== Session 2
+=== Where to Train
+- Local
+- Azure (Community / Azure Databricks)
+- Google Colab
+
+https://huggingface.co/login
+
+There are three types of LLMs:
+1. Gated models (need permission to access)
+2. Open models (everyone can access)
+3. Private models (owners or specific users/organizations)
+
+If it's a gated model:
+1. Request access for the model and wait for approval. You can check under `Settings --> Granted Repositories`.
+2. Create an access token to use the gated model.
+
+Example: `Llama-3.2-1B-Instruct`
+
+== Session 3
+=== Run on Databricks
+We are manually passing context.
+
+== Session 4
+=== How to Create a Pipeline and Automate It
+
+For example, we have a document that explains a product:
+
+`Document --> Parser & Cleaning --> Chunking (data into pieces) --> Vector Embedding (floating point numbers) --> Vector Database (store embeddings into vector DB)`
+
+=== Design Decisions
+- What are your chunking strategies?
+
+- What is your embedding size, and which embedding are you using?
+- What vector database are you using to store?
+
+Two models will be used:
+1. Embedding Model
+2. Generation Model
+
+== Rag Flow
+=== Document Loading and Parsing
+Reading raw files or data sources
+
+Extracting their content into usable formats (text, HTML, markdown, structured dicts)
+
+Preserving metadata like file name, section titles, etc.
+=== Data Chunking
+What is Chunking in RAG?
+
+Chunking refers to splitting large documents (like PDFs, manuals, or logs) into smaller units (chunks) that are:
+- Stored in a vector database (after embedding)
+- Queried using semantic search
+- Fed into the language model for answering questions
+
+==== Why Chunking Matters in RAG
+- Too small chunks → Lose context, poor answers
+- Too large chunks → Slower search, may exceed model token limits
+- Right-sized chunks → Better relevance and answer grounding
+
+[cols="1,3,2,2", options="header"]
+|===
+| Strategy                | Description                                                                 | Pros                                      | Cons
+
+| Fixed-size (by tokens)  | Split text into fixed token sizes (e.g., 256/512 tokens per chunk)          | Simple and widely used                   | May split in the middle of a sentence or concept
+
+| Fixed-size (by characters) | Split by character count (e.g., 1000 characters per chunk)              | Fast, language-agnostic                  | Ignores sentence boundaries
+
+| Sentence-based          | Split by sentence, then group 2–5 sentences per chunk                      | Natural boundaries, preserves meaning     | Sentence lengths vary
+
+| Paragraph-based         | Each paragraph = 1 chunk                                                   | Good for structured docs                 | Some paragraphs may be too long
+
+| Semantic/Topic-based    | Use models (like BERT, SBERT, TextTiling) to split by topic shifts          | High-quality, preserves coherence         | Computationally expensive
+
+| Sliding window          | Chunks overlap (e.g., 512-token chunk with 128-token overlap)              | Preserves context across chunks           | Redundant storage; slower
+
+| Hybrid                  | Mix of sentence + token + overlap rules                                    | Flexible, customizable                   | Complexity in tuning
+|===
+Example Libraries Supporting Chunking
+
+    LangChain – RecursiveCharacterTextSplitter, TokenTextSplitter, etc.
+    LlamaIndex – SentenceSplitter, MetadataAwareSplitter
+    Haystack – PreProcessor with configurable chunk sizes and overlaps
+    Unstructured.io – Advanced parsing + chunking for PDFs, HTML, DOCX, etc.
+
+Example Code:
+
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
+    splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=100,
+    separators=["\n\n", "\n", ".", " ", ""]
+    )
+    chunks = splitter.split_text(large_document)
+
+---
+learn more about chunking in Rag and it's types
+
+https://www.youtube.com/watch?v=8OJC21T2SL4
+https://github.com/FullStackRetrieval-com/RetrievalTutorials/blob/main/tutorials/LevelsOfTextSplitting/5_Levels_Of_Text_Splitting.ipynb
+
+---
+=== Embedding Model
+=== Vector Database
+=== Generation Model
+=== Chaining Tool
+
+== Week 8
+=== LangChain Makes Your Life Easy for Gen AI Applications
+
+LangChain provides:
+- Document loader libraries
+- Text splitting libraries
+- Embedding model libraries
+
+If you want to connect the components in a pipeline:
+
+[source,python]
+----
+pip install langchain_community
+import os
+from langchain_community.document_loaders import TextLoader
+from sentence_transformers import SentenceTransformer
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from transformers import pipeline
+from langchain_text_splitters import MarkdownHeaderTextSplitter
+
+# Step 1: Loading a File
+loader = TextLoader("/content/tennis_details.md")
+text_doc = loader.load()
+print(text_doc)
+print(text_doc[0].page_content)
+
+# Step 2: Divide the Data into Chunks
+split_condition = [("##", "title")]
+splitter = MarkdownHeaderTextSplitter(split_condition)
+doc_splits = splitter.split_text(text_doc[0].page_content)
+text_chunks = [split.page_content for split in doc_splits]
+print(text_chunks)
+
+# Step 3: Generate Embeddings
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+def embed_chunk(chunk):
+    return embedding_model.encode([chunk], normalize_embeddings=True)
+
+sample_embedding = embed_chunk(text_chunks[1]).tolist()[0]
+
+# Install vector database ChromaDB
+pip install chromadb
+
+# Step 4: Store Embeddings in ChromaDB
+vector_db = Chroma.from_texts(
+    text_chunks,
+    HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2"),
+    persist_directory="/tmp/chroma_db"
+)
+
+# Step 5: Set up an LLM
+pipe = pipeline("text-generation", model="Qwen/Qwen2.5-1.5B-Instruct")
+
+# Step 6: Retrieval and Generation
+def retrieve_and_generate(query, threshold=1):
+    """Retrieves relevant context from the vector database and generates an answer."""
+    search_results = vector_db.similarity_search_with_score(query, k=1)
+
+    print(search_results)
+
+    if not search_results or search_results[0][1] > threshold:
+        return "I don't know the answer. There is no available context in vector DB."
+
+    retrieved_context = search_results[0][0].page_content
+    similarity_score = search_results[0][1]
+    print(f"Similarity Score: {similarity_score}")
+    print(f"Retrieved Context: {retrieved_context}")
+
+    prompt = f"Answer the question using the given context\nContext: {retrieved_context}\nQuestion: {query}\nAnswer: "
+    print(prompt)
+    response = pipe(prompt, max_new_tokens=100)
+    return response[0]["generated_text"]
+
+question = "What are famous tournaments in tennis?"
+response = retrieve_and_generate(question)
+print(response)
+----

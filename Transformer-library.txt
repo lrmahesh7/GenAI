@@ -1,0 +1,29 @@
+https://colab.research.google.com/
+
+from transformers import pipeline  
+classifier = pipeline("sentiment-analysis")
+review = "I love this movie!"
+result = classifier(review)
+print(result)
+
+from transformers import pipeline  
+classifier = pipeline("sentiment-analysis")
+review = "this movie  was waste of time"
+result = classifier(review)
+print(result)
+
+from transformers import pipeline  
+classifier = pipeline("sentiment-analysis")
+review = ["this movie  was waste of time","I love this movie!"]
+result = classifier(review)
+print(result)
+
+
+from transformers import pipeline  
+classifier = pipeline("sentiment-analysis")
+reviews = ["this movie  was waste of time","I love this movie!"]
+results = classifier(review)
+print(result)
+
+for review,result in zip(reviews,results)
+  print(f"Review: {review} | Sentiment: {result['label']} | Score: {result['score']}")
